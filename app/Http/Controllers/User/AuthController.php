@@ -66,12 +66,12 @@ class AuthController extends Controller
         $user['token'] = auth()->login($user);
 //        $expires_in = auth()->factory()->getTTL() / 60 / 24 / 365;
 //        $user['expires_in'] = "$expires_in years";
-        $this->sandRegisterCode();
+        $this->sendRegisterCode();
         return $this->returnData('user', $user, 'User registered sand your email ');
     }
 
     //Sand Register Code
-    public  function sandRegisterCode(){
+    public  function sendRegisterCode(){
         $user=Auth::user();
         $code = ['code' => $this->returnCode(), "user_id" => $user['id']];
         Code::create($code);
@@ -130,7 +130,4 @@ class AuthController extends Controller
         $token = auth()->refresh();
         return $this->returnData("new token", $token);
     }
-
-
-
 }

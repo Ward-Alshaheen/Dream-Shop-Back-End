@@ -18,7 +18,7 @@ class PasswordController extends Controller
     use GeneralTrait;
 
     //Sand Password Reset Code
-    public function sandPasswordResetCode(Request $request)
+    public function sendPasswordResetCode(Request $request)
     {
         $email=$request->all();
         $validator = Validator::make($email, [

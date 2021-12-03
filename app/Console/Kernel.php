@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
 
-        $schedule->command('delete_code')->everyMinute();
+        $schedule->command(DeleteCode::class)->everyMinute();
     }
 
     /**
@@ -30,5 +30,6 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
+
     }
 }

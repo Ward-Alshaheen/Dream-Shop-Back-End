@@ -17,8 +17,9 @@ class CreateCodesTable extends Migration
             $table->increments('id');
             $table->string('code');
             $table->integer('time')->default(0);
-            $table->integer('user_id');
+            $table->integer('user_id')->unsigned();
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
