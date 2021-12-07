@@ -40,7 +40,7 @@ Route::group([
     });
 });
 Route::group([
-    'middleware'=>['auth.user:api','account_product'],
+    'middleware'=>['auth.user:api','account_product','password_confirmation'],
 ], function () {
     Route::get('products/{id}', [ProductController::class, 'show']);
     Route::post('products', [ProductController::class, 'store']);

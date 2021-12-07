@@ -7,6 +7,7 @@ use App\Http\Middleware\AccountProduct;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\AuthUser;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\PasswordConfirmation;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\ResetPassword;
@@ -92,5 +93,6 @@ class Kernel extends HttpKernel
         'reset.password'=>ResetPassword::class,
         'account_confirmation'=>AccountConfirmation::class,
         'account_product'=>AccountProduct::class,
+        'password_confirmation'=>PasswordConfirmation::class,
     ];
 }
