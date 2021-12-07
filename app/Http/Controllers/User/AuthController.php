@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\EmailLaravel;
 use App\Models\Code;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -30,7 +31,7 @@ class AuthController extends Controller
      * Get a JWT via given credentials.
      *
      */
-    public function login()
+    public function login(): JsonResponse
     {
         $credentials = request(['email', 'password']);
         $token = auth()->attempt($credentials);
@@ -48,7 +49,7 @@ class AuthController extends Controller
      * register
      *
      */
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
         $input = $request->all();
         $validator = Validator::make($input, [
@@ -71,7 +72,8 @@ class AuthController extends Controller
     }
 
     //Sand Register Code
-    public  function sendRegisterCode(){
+    public  function sendRegisterCode(): JsonResponse
+    {
         $user=Auth::user();
         $code = ['code' => $this->returnCode(), "user_id" => $user['id']];
         Code::create($code);
@@ -79,7 +81,8 @@ class AuthController extends Controller
         return $this->returnSuccessMessage("send code");
     }
 
-    public function checkRegisterCode(Request $request){
+    public function checkRegisterCode(Request $request): JsonResponse
+    {
         $reset=$request->all();
         $validator = Validator::make($reset, [
             'code' => 'required',
@@ -101,33 +104,17 @@ class AuthController extends Controller
         $code->delete();
         return $this->returnSuccessMessage("Successfully");
     }
-    /**
-     * Get the authenticated User.
-     *
-     */
-    public function me()
-    {
-        return $this->returnData("user", auth()->user());
-    }
 
     /**
      * Log the user out (Invalidate the token).
      *
      */
-    public function logout()
+    public function logout(): JsonResponse
     {
         auth()->logout();
 
         return $this->returnSuccessMessage('Successfully logged out');
     }
 
-    /**
-     * Refresh a token.
-     *
-     */
-    public function refresh()
-    {
-        $token = auth()->refresh();
-        return $this->returnData("new token", $token);
-    }
+
 }

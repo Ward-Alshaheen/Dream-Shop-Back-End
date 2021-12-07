@@ -7,6 +7,7 @@ use App\Mail\EmailLaravel;
 use App\Models\Code;
 use App\Models\User;
 use App\Traits\GeneralTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +19,7 @@ class PasswordController extends Controller
     use GeneralTrait;
 
     //Sand Password Reset Code
-    public function sendPasswordResetCode(Request $request)
+    public function sendPasswordResetCode(Request $request): JsonResponse
     {
         $email=$request->all();
         $validator = Validator::make($email, [
@@ -39,7 +40,8 @@ class PasswordController extends Controller
     }
 
     //Check the password reset code
-    public function checkPasswordResetCode(Request $request){
+    public function checkPasswordResetCode(Request $request): JsonResponse
+    {
 
         $reset=$request->all();
         $validator = Validator::make($reset, [
@@ -67,7 +69,8 @@ class PasswordController extends Controller
     }
 
     //Password Reset
-    public function passwordReset(Request $request){
+    public function passwordReset(Request $request): JsonResponse
+    {
         $reset=$request->all();
         $validator = Validator::make($reset, [
             'password' => 'required|min:8',

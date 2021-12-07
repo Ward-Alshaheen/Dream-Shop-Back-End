@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Traits\GeneralTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserControllers extends AuthController
@@ -12,7 +14,7 @@ class UserControllers extends AuthController
     use GeneralTrait;
 
     //Add Image
-    public function addImage(Request $request)
+    public function addImage(Request $request): JsonResponse
     {
         $image = $request->all();
         $validator = Validator::make($image, [
@@ -21,8 +23,8 @@ class UserControllers extends AuthController
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
-        $newImage = time() . $this->returnCode(20) . $image['image']->getClientOriginalName();
         $user = Auth::user();
+        $newImage = time() . $this->returnCode(20) . $image['image']->getClientOriginalName();
         $image['image']->move('uploads/userImage', $newImage);
         $user['image'] = 'http://127.0.0.1:8000/uploads/userImage/' . $newImage;
         $user->save();
@@ -32,7 +34,7 @@ class UserControllers extends AuthController
     }
 
     //Delete Image
-    public function deleteImage()
+    public function deleteImage(): JsonResponse
     {
         $user = Auth::user();
         if (!$user['image']) {
@@ -45,7 +47,7 @@ class UserControllers extends AuthController
     }
 
     //Update User
-    public function updateUser(Request $request)
+    public function updateUser(Request $request): JsonResponse
     {
         $input = $request->all();
         $validator = Validator::make($input, [
@@ -78,5 +80,41 @@ class UserControllers extends AuthController
         }
         $user->save();
         return $this->returnSuccessMessage("Update  Successfully");
+    }
+    public  function changePassword(Request $request): JsonResponse
+    {
+        $reset=$request->all();
+        $validator = Validator::make($reset, [
+            'old_password'=>'required|min:8',
+            'password' => 'required|min:8',
+            'c_password' => 'required|same:password'
+        ]);
+        if ($validator->fails()) {
+            return $this->returnError(401, $validator->errors());
+        }
+        $user=Auth::user();
+        if (!Hash::check($reset['old_password'],$user['password'])){
+            return $this->returnError(401,'The password is incorrect');
+        }
+        $user['password']=Hash::make($reset['password']);
+        $user->save();
+        return $this->returnSuccessMessage('Successfully');
+    }
+    /**
+     * Get the authenticated User.
+     *
+     */
+    public function me(): JsonResponse
+    {
+        return $this->returnData("user", auth()->user());
+    }
+    /**
+     * Refresh a token.
+     *
+     */
+    public function refresh(): JsonResponse
+    {
+        $token = auth()->refresh();
+        return $this->returnData("new token", $token);
     }
 }
