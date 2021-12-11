@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @method static find(int $id)
  * @method static create(array $product)
+ * @method static where(string $string, mixed $category)
  */
 class Product extends Model
 {
@@ -26,7 +27,7 @@ class Product extends Model
         'discounts'
     ];
     protected $hidden = [
-       // 'discounts',
+        'discounts',
         'updated_at',
         'created_at'
     ];

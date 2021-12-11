@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\URL;
 
 trait GeneralTrait
 {
@@ -62,5 +63,11 @@ trait GeneralTrait
         $d=100-$discounts[2]['discount'];
         return $price *1*($d/100);
     }
-
+    //Save Image
+    public function saveImage($image,$file): string
+    {
+        $newImage = time() . $this->returnCode(20) . $image->getClientOriginalName();
+        $image->move("uploads/$file", $newImage);
+        return URL::to("/uploads/$file") . "/" . $newImage;
+    }
 }

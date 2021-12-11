@@ -40,10 +40,13 @@ Route::group([
     });
 });
 Route::group([
+    'prefix'=>'products',
     'middleware'=>['auth.user:api','account_product','password_confirmation'],
 ], function () {
-    Route::get('products/{id}', [ProductController::class, 'show']);
-    Route::post('products', [ProductController::class, 'store']);
-    Route::get('products', [ProductController::class, 'index']);
-    Route::delete('products/{id}', [ProductController::class, 'destroy']);
+    Route::get('/{id}', [ProductController::class, 'show']);
+    Route::post('/', [ProductController::class, 'store']);
+    Route::get('/', [ProductController::class, 'index']);
+    Route::delete('/{id}', [ProductController::class, 'destroy']);
+    Route::post('/category',[ProductController::class,'showCategory']);
+    Route::post('/{id}', [ProductController::class, 'update']);
 });

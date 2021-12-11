@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 
 class UserControllers extends AuthController
@@ -24,11 +25,8 @@ class UserControllers extends AuthController
             return $this->returnError(401, $validator->errors());
         }
         $user = Auth::user();
-        $newImage = time() . $this->returnCode(20) . $image['image']->getClientOriginalName();
-        $image['image']->move('uploads/userImage', $newImage);
-        $user['image'] = 'http://127.0.0.1:8000/uploads/userImage/' . $newImage;
+        $user['image'] = $this->saveImage($image['image'],'userImage');
         $user->save();
-        //unlink( substr($user['image'],22));
         return $this->returnData("image", $user['image']);
         //return $this->returnData("image",strlen('http://127.0.0.1:8000/'));
     }
@@ -40,7 +38,7 @@ class UserControllers extends AuthController
         if (!$user['image']) {
             return $this->returnError(401, "Image not found");
         }
-        unlink(substr($user['image'], 22));
+        unlink(substr($user['image'], strlen(URL::to('/'))+1));
         $user['image'] = null;
         $user->save();
         return $this->returnSuccessMessage("Successfully");
@@ -81,6 +79,8 @@ class UserControllers extends AuthController
         $user->save();
         return $this->returnSuccessMessage("Update  Successfully");
     }
+
+    //Change Password
     public  function changePassword(Request $request): JsonResponse
     {
         $reset=$request->all();
@@ -106,7 +106,7 @@ class UserControllers extends AuthController
      */
     public function me(): JsonResponse
     {
-        return $this->returnData("user", auth()->user());
+        return $this->returnData("user", strlen(URL::to('/')));
     }
     /**
      * Refresh a token.
