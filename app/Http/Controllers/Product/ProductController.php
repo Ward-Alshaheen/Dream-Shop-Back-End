@@ -25,6 +25,7 @@ class ProductController extends Controller
         $products = Product::all();
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
+            $products[$i]->user;
         }
         return $this->returnData('products', $products);
     }
@@ -131,7 +132,6 @@ class ProductController extends Controller
         $productUpdate['images'] = $product['images'];
         $validator = Validator::make($productUpdate, [
             'name' => 'required|string',
-            'image1' => 'image',
             'description' => 'required|string',
             'category' => 'required|string',
             'phone' => 'required|string',

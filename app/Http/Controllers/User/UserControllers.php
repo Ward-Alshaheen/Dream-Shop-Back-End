@@ -106,7 +106,7 @@ class UserControllers extends AuthController
      */
     public function me(): JsonResponse
     {
-        return $this->returnData("user", strlen(URL::to('/')));
+        return $this->returnData("user", Auth::user());
     }
     /**
      * Refresh a token.
