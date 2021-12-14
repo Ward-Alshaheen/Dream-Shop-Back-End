@@ -28,7 +28,6 @@ class UserControllers extends AuthController
         $user['image'] = $this->saveImage($image['image'],'userImage');
         $user->save();
         return $this->returnData("image", $user['image']);
-        //return $this->returnData("image",strlen('http://127.0.0.1:8000/'));
     }
 
     //Delete Image

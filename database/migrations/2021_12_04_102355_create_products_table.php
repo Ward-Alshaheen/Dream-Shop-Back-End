@@ -15,7 +15,7 @@ class CreateProductsTable extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-           $table->string('name');
+            $table->string('name');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->json('images');
             $table->longText('description');
@@ -24,6 +24,7 @@ class CreateProductsTable extends Migration
             $table->integer('remaining_days');
             $table->double('quantity')->default(1);
             $table->string('phone');
+            $table->integer('views')->default(0);
             $table->longText('facebook')->nullable();
             $table->double('price');
             $table->json('discounts');

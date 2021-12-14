@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static find(int $id)
  * @method static create(array $product)
  * @method static where(string $string, mixed $category)
+ * @method static orderBy(string $string)
  */
 class Product extends Model
 {
@@ -34,5 +36,9 @@ class Product extends Model
     public  function user(): BelongsTo
     {
         return $this->belongsTo(User::class,'user_id');
+    }
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class,'product_id');
     }
 }

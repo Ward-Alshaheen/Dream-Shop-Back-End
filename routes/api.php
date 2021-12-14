@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Like\LikeController as LikeControllerAlias;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\User\AuthController;
 use App\Http\Controllers\User\PasswordController;
@@ -49,4 +50,7 @@ Route::group([
     Route::delete('/{id}', [ProductController::class, 'destroy']);
     Route::post('/category',[ProductController::class,'showCategory']);
     Route::post('/{id}', [ProductController::class, 'update']);
+    Route::get('views/{id}',[ProductController::class,'views']);
+    Route::get('my/products',[ProductController::class,'myProduct']);
+    Route::get('like/{id}',[LikeControllerAlias::class,'like']);
 });

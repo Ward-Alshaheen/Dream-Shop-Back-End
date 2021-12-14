@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Like\LikeController;
 use App\Models\Product;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\JsonResponse;
@@ -22,10 +23,12 @@ class ProductController extends Controller
      */
     public function index(): JsonResponse
     {
-        $products = Product::all();
+        $products = Product::orderBy('remaining_days')->get();
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]->user;
+            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);
     }
@@ -103,7 +106,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
-        $products = Product::where('category', $category['category'])->get();
+        $products = Product::where('category', $category['category'])->orderBy('remaining_days')->get();
         if (count($products) == 0) {
             return $this->returnError(401, 'not fond');
         }
@@ -195,5 +198,26 @@ class ProductController extends Controller
         }
         $product->delete();
         return $this->returnSuccessMessage('Successfully');
+    }
+    //view +1
+    public function views($id): JsonResponse
+    {
+        $product=Product::find($id);
+        if (!$product){
+            return $this->returnError(55, 'not found');
+        }
+        $product['views']+=1;
+        $product->save();
+        return $this->returnSuccessMessage('Successfully');
+    }
+    //My Product
+    public function myProduct(): JsonResponse{
+        $products = Product::where('user_id',Auth::id())->orderBy('remaining_days')->get();
+        for ($i = 0; $i < count($products); $i++) {
+            $products[$i]['images'] = json_decode($products[$i]['images'], true);
+            $products[$i]->user;
+        }
+        return $this->returnData('products', $products);
+
     }
 }

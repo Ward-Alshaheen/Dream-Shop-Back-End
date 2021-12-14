@@ -42,7 +42,7 @@ class AuthController extends Controller
         $user['token'] = $token;
 //        $expires_in = auth()->factory()->getTTL() / 60 / 24 / 365;
 //        $user['expires_in'] = "$expires_in years";
-        return $this->returnData('user', $user, 'Uset login successfully');
+        return $this->returnData('user', $user, 'User login successfully');
     }
 
     /**
