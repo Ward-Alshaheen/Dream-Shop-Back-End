@@ -93,6 +93,9 @@ class ProductController extends Controller
             return $this->returnError(55, 'not found');
         }
         $product['images'] = json_decode($product['images'], true);
+        $product->user;
+        $product['likes']=LikeController::countLike($product['id']);
+        $product['meLikes']=LikeController::meLike($product['id']);
         return $this->returnData("product", $product);
     }
 
@@ -111,7 +114,11 @@ class ProductController extends Controller
             return $this->returnError(401, 'not fond');
         }
         for ($i = 0; $i < count($products); $i++) {
+            $products[$i]->user;
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
+            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+
         }
         return $this->returnData('products', $products);
     }
@@ -216,6 +223,8 @@ class ProductController extends Controller
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]->user;
+            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);
 

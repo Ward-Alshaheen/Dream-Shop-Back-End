@@ -43,7 +43,7 @@ class DeleteProduct extends Command
     {
         $products = Product::all();
         foreach ($products as $product) {
-           echo $product['remaining_days']-=1;
+            $product['remaining_days'] -= 1;
             if ($product['remaining_days'] <= 0) {
                 $product->delete();
             } else {

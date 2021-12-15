@@ -63,8 +63,9 @@ class PasswordController extends Controller
         $user->save();
         $code->delete();
         $token = auth()->login($user);
+        $user['token'] = $token;
 
-        return $this->returnData("token",$token);
+        return $this->returnData("user",$user);
 
     }
 

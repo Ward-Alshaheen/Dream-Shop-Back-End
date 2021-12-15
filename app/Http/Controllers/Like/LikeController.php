@@ -36,4 +36,17 @@ class LikeController extends Controller
             return true;
         return false;
     }
+    public function myProductLike(): JsonResponse
+    {
+        $products=[];
+        $likes=Like::where('user_id',Auth::id())->get();
+      for ($i=0;$i<count($likes);$i++){
+          $products[]=$likes[$i]->product;
+          $products[$i]['images'] = json_decode($products[$i]['images'], true);
+          $products[$i]->user;
+          $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+          $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+      }
+        return $this->returnData('products', $products);
+    }
 }
