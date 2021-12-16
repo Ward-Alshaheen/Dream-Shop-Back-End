@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Like\LikeController;
 use App\Models\Product;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +27,7 @@ class ProductController extends Controller
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]->user;
             $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['views']=ViewController::countView($products[$i]['id']);
             $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);
@@ -47,11 +47,11 @@ class ProductController extends Controller
             'image1' => 'required|image',
             'description' => 'required|string',
             'category' => 'required|string',
-            'expiration_date' => 'required|date_equals:date',
+            'expiration_date' => 'required|date',
             'phone' => 'required|string',
             'price' => 'required|regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
             'discounts' => 'required|json',
-            'quantity' => 'Integer',
+            'quantity' => 'regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
             'facebook' => 'URL'
         ]);
         if ($validator->fails()) {
@@ -69,11 +69,10 @@ class ProductController extends Controller
         }
         $product['discounts'] = json_decode($product['discounts'], true);
         $product['user_id'] = Auth::id();
-        $product['expiration_date'] = date_create(date('Y/m/d', $product['expiration_date']));
+        $product['expiration_date'] = date_create(date('Y/m/d', strtotime($product['expiration_date'])));
         $dateNow = date_create(date('Y/m/d'));
         $diff = date_diff($dateNow, $product['expiration_date']);
         $product['remaining_days'] = $diff->format("%R%a") * 1;
-
         $product['images'] = json_encode($product['images']);
         $product['discounts'] = ['main' => $product['price'], 'd' => $product['discounts']];
         $product['price'] = $this->price($product['discounts'], $product['remaining_days']);
@@ -95,6 +94,7 @@ class ProductController extends Controller
         $product['images'] = json_decode($product['images'], true);
         $product->user;
         $product['likes']=LikeController::countLike($product['id']);
+        $product['views']=ViewController::countView($product['id']);
         $product['meLikes']=LikeController::meLike($product['id']);
         return $this->returnData("product", $product);
     }
@@ -117,6 +117,7 @@ class ProductController extends Controller
             $products[$i]->user;
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['views']=ViewController::countView($products[$i]['id']);
             $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
 
         }
@@ -206,17 +207,6 @@ class ProductController extends Controller
         $product->delete();
         return $this->returnSuccessMessage('Successfully');
     }
-    //view +1
-    public function views($id): JsonResponse
-    {
-        $product=Product::find($id);
-        if (!$product){
-            return $this->returnError(55, 'not found');
-        }
-        $product['views']+=1;
-        $product->save();
-        return $this->returnSuccessMessage('Successfully');
-    }
     //My Product
     public function myProduct(): JsonResponse{
         $products = Product::where('user_id',Auth::id())->orderBy('remaining_days')->get();
@@ -224,6 +214,7 @@ class ProductController extends Controller
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]->user;
             $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
+            $products[$i]['views']=ViewController::countView($products[$i]['id']);
             $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);

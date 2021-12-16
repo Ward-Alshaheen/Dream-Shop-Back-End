@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Like;
+namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
 use App\Models\Like;
@@ -22,6 +22,8 @@ class LikeController extends Controller
         if (!$product){
             return $this->returnError(55, 'not found');
         }
+        if ($product->user['id']==Auth::id())
+            return $this->returnError(55, 'is your product');
         Like::create([
             "user_id"=>Auth::id(),
             "product_id"=>$id

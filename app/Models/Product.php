@@ -26,7 +26,8 @@ class Product extends Model
         'remaining_days',
         'phone',
         'price',
-        'discounts'
+        'discounts',
+        'quantity'
     ];
     protected $hidden = [
         'discounts',
@@ -40,5 +41,9 @@ class Product extends Model
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class,'product_id');
+    }
+    public function views(): HasMany
+    {
+        return $this->hasMany(View::class,'product_id');
     }
 }
