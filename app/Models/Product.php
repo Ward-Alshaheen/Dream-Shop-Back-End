@@ -27,7 +27,8 @@ class Product extends Model
         'phone',
         'price',
         'discounts',
-        'quantity'
+        'quantity',
+        'facebook'
     ];
     protected $hidden = [
         'discounts',
@@ -45,5 +46,9 @@ class Product extends Model
     public function views(): HasMany
     {
         return $this->hasMany(View::class,'product_id');
+    }
+    public function comment(): HasMany
+    {
+        return $this->hasMany(Comment::class,'product_id');
     }
 }

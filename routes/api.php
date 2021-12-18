@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Product\CommentController;
 use App\Http\Controllers\Product\LikeController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Product\ViewController;
@@ -55,4 +56,15 @@ Route::group([
     Route::get('my/products',[ProductController::class,'myProduct']);
     Route::get('like/{id}',[LikeController::class,'like']);
     Route::get('my/products/like',[LikeController::class,'myProductLike']);
+
+    Route::group([
+        'prefix'=>'comments',
+
+    ], function () {
+        Route::post('/{id}',[CommentController::class,'add']);
+        Route::get('/{id}',[CommentController::class,'all']);
+        Route::delete('/{id}',[CommentController::class,'delete']);
+        Route::put('/{id}',[CommentController::class,'update']);
+    });
 });
+

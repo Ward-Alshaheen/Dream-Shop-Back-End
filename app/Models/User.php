@@ -35,18 +35,8 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'password',
-        'reset_password',
         'created_at',
         'updated_at'
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
     ];
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
@@ -84,5 +74,9 @@ class User extends Authenticatable implements JWTSubject
     public function views(): HasMany
     {
         return $this->hasMany(View::class,'user_id');
+    }
+    public function comment(): HasMany
+    {
+        return $this->hasMany(Comment::class,'user_id');
     }
 }
