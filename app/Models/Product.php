@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static create(array $product)
  * @method static where(string $string, mixed $category)
  * @method static orderBy(string $string)
+ * @method static withCount(string $string)
  */
 class Product extends Model
 {

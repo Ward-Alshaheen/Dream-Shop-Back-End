@@ -52,11 +52,11 @@ trait GeneralTrait
         if ($remaining_days>$discounts[0]['remaining_days']){
             return $price*1;
         }
-        if ($remaining_days<=$discounts[0]['remaining_days']&&$remaining_days>$discounts[1]['remaining_days']){
+        if ($remaining_days>$discounts[1]['remaining_days']){
          $d=100-$discounts[0]['discount'];
          return $price *1*($d/100);
         }
-        if ($remaining_days<=$discounts[1]['remaining_days']&&$remaining_days>$discounts[2]['remaining_days']){
+        if ($remaining_days>$discounts[2]['remaining_days']){
             $d=100-$discounts[1]['discount'];
             return $price *1*($d/100);
         }

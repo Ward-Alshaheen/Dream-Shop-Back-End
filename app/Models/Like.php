@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @method static create(array $array)
  * @method static where(string $string, int $id)
+ * @method static withOnly(string $string)
+ * @method static orderBy(string $string)
  */
 class Like extends Model
 {

@@ -45,6 +45,7 @@ Route::group([
 Route::group([
     'prefix'=>'products',
     'middleware'=>['auth.user:api','account_product','password_confirmation'],
+
 ], function () {
     Route::get('/{id}', [ProductController::class, 'show']);
     Route::post('/', [ProductController::class, 'store']);
@@ -56,6 +57,7 @@ Route::group([
     Route::get('my/products',[ProductController::class,'myProduct']);
     Route::get('like/{id}',[LikeController::class,'like']);
     Route::get('my/products/like',[LikeController::class,'myProductLike']);
+    Route::get('user/{id}',[ProductController::class,'productUser']);
 
     Route::group([
         'prefix'=>'comments',

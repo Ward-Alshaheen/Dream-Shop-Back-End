@@ -18,17 +18,47 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::orderBy('remaining_days')->get();
+        if ($request->hasHeader('sort')) {
+            if (
+                $request->header('sort') != 'created_at' &&
+                $request->header('sort') != 'price' &&
+                $request->header('sort') != 'name' &&
+                $request->header('sort') != 'expiration_date' &&
+                $request->header('sort') != 'remaining_days' &&
+                $request->header('sort') != 'category' &&
+                $request->header('sort') != 'quantity' &&
+                $request->header('sort') != 'likes_count'&&
+                $request->header('sort') != 'views_count') {
+                return $this->returnError(401, 'error sort');
+            }
+            if ($request->header('desc')=="true") {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->orderByDesc($request->header('sort'))
+                    ->get();
+            } else {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->orderBy($request->header('sort'))
+                    ->get();
+            }
+        } else {
+            $products = Product::with('user')
+                ->withCount('likes')
+                ->withCount('views')
+                ->orderBy('likes_count')
+                ->get();
+        }
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
-            $products[$i]->user;
-            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
-            $products[$i]['views']=ViewController::countView($products[$i]['id']);
-            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+            $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);
     }
@@ -87,15 +117,12 @@ class ProductController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $product = Product::find($id);
+        $product = Product::with('user')->withCount('likes')->withCount('views')->find($id);
         if (!$product) {
             return $this->returnError(55, 'not found');
         }
         $product['images'] = json_decode($product['images'], true);
-        $product->user;
-        $product['likes']=LikeController::countLike($product['id']);
-        $product['views']=ViewController::countView($product['id']);
-        $product['meLikes']=LikeController::meLike($product['id']);
+        $product['me_likes'] = LikeController::meLike($product['id']);
         return $this->returnData("product", $product);
     }
 
@@ -109,16 +136,47 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
-        $products = Product::where('category', $category['category'])->orderBy('remaining_days')->get();
+        if ($request->hasHeader('sort')) {
+            if (
+                $request->header('sort') != 'created_at' &&
+                $request->header('sort') != 'price' &&
+                $request->header('sort') != 'name' &&
+                $request->header('sort') != 'expiration_date' &&
+                $request->header('sort') != 'remaining_days' &&
+                $request->header('sort') != 'category' &&
+                $request->header('sort') != 'quantity' &&
+                $request->header('sort') != 'likes_count'&&
+                $request->header('sort') != 'views_count') {
+                return $this->returnError(401, 'error sort');
+            }
+            if ($request->header('desc')=="true") {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('category', $category['category'])
+                    ->orderByDesc($request->header('sort'))
+                    ->get();
+            } else {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('category', $category['category'])
+                    ->orderBy($request->header('sort'))
+                    ->get();
+            }
+        } else {
+            $products = Product::with('user')
+                ->withCount('likes')
+                ->withCount('views')
+                ->where('category', $category['category'])
+                ->orderBy('remaining_days')->get();
+        }
         if (count($products) == 0) {
             return $this->returnError(401, 'not fond');
         }
         for ($i = 0; $i < count($products); $i++) {
-            $products[$i]->user;
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
-            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
-            $products[$i]['views']=ViewController::countView($products[$i]['id']);
-            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+            $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
 
         }
         return $this->returnData('products', $products);
@@ -162,7 +220,7 @@ class ProductController extends Controller
             }
             if ($request->has('image' . $i)) {
                 if ($c >= $i) {
-                    unlink(substr($product['images'][$i-1], strlen(URL::to('/'))+1));
+                    unlink(substr($product['images'][$i - 1], strlen(URL::to('/')) + 1));
                     $productUpdate['images'][$i - 1] = $this->saveImage($productUpdate['image' . $i], 'productImage');
                     continue;
                 }
@@ -179,9 +237,9 @@ class ProductController extends Controller
             $product['facebook'] = $productUpdate['facebook'];
         }
         $product->save();
-        $product['images']=json_decode($product['images'],true);
-        $product->user=null;
-        $product['user']=null;
+        $product['images'] = json_decode($product['images'], true);
+        $product->user = null;
+        $product['user'] = null;
         return $this->returnData("product", $product, "Successfully");
     }
 
@@ -200,24 +258,103 @@ class ProductController extends Controller
         if ($product->user['id'] != Auth::id()) {
             return $this->returnError(401, "");
         }
-        $im=json_decode($product['images'],true);
-        foreach ($im as $item){
-            unlink(substr($item, strlen(URL::to('/'))+1));
+        $im = json_decode($product['images'], true);
+        foreach ($im as $item) {
+            unlink(substr($item, strlen(URL::to('/')) + 1));
         }
         $product->delete();
         return $this->returnSuccessMessage('Successfully');
     }
+
     //My Product
-    public function myProduct(): JsonResponse{
-        $products = Product::where('user_id',Auth::id())->orderBy('remaining_days')->get();
+    public function myProduct(Request $request): JsonResponse
+    {
+        if ($request->hasHeader('sort')) {
+            if (
+                $request->header('sort') != 'created_at' &&
+                $request->header('sort') != 'price' &&
+                $request->header('sort') != 'name' &&
+                $request->header('sort') != 'expiration_date' &&
+                $request->header('sort') != 'remaining_days' &&
+                $request->header('sort') != 'category' &&
+                $request->header('sort') != 'quantity' &&
+                $request->header('sort') != 'likes_count'&&
+                $request->header('sort') != 'views_count') {
+                return $this->returnError(401, 'error sort');
+            }
+            if($request->header('desc')=="true") {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('user_id', Auth::id())
+                    ->orderByDesc($request->header('sort'))
+                    ->get();
+            } else {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('user_id', Auth::id())
+                    ->orderBy($request->header('sort'))
+                    ->get();
+            }
+        } else {
+            $products = Product::with('user')
+                ->withCount('likes')
+                ->withCount('views')
+                ->where('user_id', Auth::id())
+                ->orderBy('remaining_days')
+                ->get();
+        }
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
-            $products[$i]->user;
-            $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
-            $products[$i]['views']=ViewController::countView($products[$i]['id']);
-            $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+            $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
         }
         return $this->returnData('products', $products);
+    }
 
+    //products user
+    public function productUser(Request $request, int $id): JsonResponse
+    {
+        if ($request->hasHeader('sort')) {
+            if (
+                $request->header('sort') != 'created_at' &&
+                $request->header('sort') != 'price' &&
+                $request->header('sort') != 'name' &&
+                $request->header('sort') != 'expiration_date' &&
+                $request->header('sort') != 'remaining_days' &&
+                $request->header('sort') != 'category' &&
+                $request->header('sort') != 'quantity' &&
+                $request->header('sort') != 'likes_count'&&
+                $request->header('sort') != 'views_count') {
+                return $this->returnError(401, 'error sort');
+            }
+            if ($request->header('desc')=="true") {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('user_id', $id)
+                    ->orderByDesc($request->header('sort'))
+                    ->get();
+            } else {
+                $products = Product::with('user')
+                    ->withCount('likes')
+                    ->withCount('views')
+                    ->where('user_id', $id)
+                    ->orderBy($request->header('sort'))
+                    ->get();
+            }
+        } else {
+            $products = Product::with('user')
+                ->withCount('likes')
+                ->withCount('views')
+                ->where('user_id', $id)
+                ->orderBy('remaining_days')
+                ->get();
+        }
+        for ($i = 0; $i < count($products); $i++) {
+            $products[$i]['images'] = json_decode($products[$i]['images'], true);
+            $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
+        }
+        return $this->returnData('products', $products);
     }
 }

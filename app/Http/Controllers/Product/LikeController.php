@@ -30,9 +30,6 @@ class LikeController extends Controller
         ]);
         return $this->returnSuccessMessage("Successfully");
     }
-   static public function countLike(int $id): int{
-        return Like::where('product_id',$id)->count();
-    }
     static public function meLike(int $id):bool{
         if (Like::where('user_id',Auth::id())->where("product_id",$id)->first())
             return true;
@@ -43,11 +40,9 @@ class LikeController extends Controller
         $products=[];
         $likes=Like::where('user_id',Auth::id())->get();
       for ($i=0;$i<count($likes);$i++){
-          $products[]=$likes[$i]->product;
+          $products[]=$likes[$i]->product->with('user')->withCount('likes')->withCount('views')->first();
           $products[$i]['images'] = json_decode($products[$i]['images'], true);
-          $products[$i]->user;
-          $products[$i]['likes']=LikeController::countLike($products[$i]['id']);
-          $products[$i]['meLikes']=LikeController::meLike($products[$i]['id']);
+
       }
         return $this->returnData('products', $products);
     }

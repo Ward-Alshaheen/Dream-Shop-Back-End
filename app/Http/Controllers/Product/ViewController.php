@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
-use App\Models\Like;
 use App\Models\Product;
 use App\Models\View;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ViewController extends Controller
@@ -30,8 +28,5 @@ class ViewController extends Controller
             "product_id"=>$id
         ]);
         return $this->returnSuccessMessage("Successfully");
-    }
-    static public function countView(int $id): int{
-        return View::where('product_id',$id)->count();
     }
 }
