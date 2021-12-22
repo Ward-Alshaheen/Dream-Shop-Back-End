@@ -53,7 +53,7 @@ class ProductController extends Controller
             $products = Product::with('user')
                 ->withCount('likes')
                 ->withCount('views')
-                ->orderBy('likes_count')
+                ->orderBy('remaining_days')
                 ->get();
         }
         for ($i = 0; $i < count($products); $i++) {

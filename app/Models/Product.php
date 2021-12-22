@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static where(string $string, mixed $category)
  * @method static orderBy(string $string)
  * @method static withCount(string $string)
+ * @method static join(string $string, string $string1, string $string2, string $string3)
  */
 class Product extends Model
 {
