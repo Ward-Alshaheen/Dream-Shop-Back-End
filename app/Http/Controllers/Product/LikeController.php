@@ -46,49 +46,17 @@ class LikeController extends Controller
      */
     public function myProductLike(Request $request): JsonResponse
     {
-        if ($request->hasHeader('sort')) {
-            if(
-                $request->header('sort') != 'created_at' &&
-                $request->header('sort') != 'price' &&
-                $request->header('sort') != 'name' &&
-                $request->header('sort') != 'expiration_date' &&
-                $request->header('sort') != 'remaining_days' &&
-                $request->header('sort') != 'category' &&
-                $request->header('sort') != 'quantity' &&
-                $request->header('sort') != 'likes_count' &&
-                $request->header('sort') != 'views_count') {
-                return $this->returnError(401, 'error sort');
-            }
-            if ($request->header('desc') == "true") {
-                $products = Product::join('likes', 'likes.product_id', '=', 'products.id')
-                    ->where('likes.user_id', Auth::id())
-                    ->with('user')
-                    ->withCount('likes')
-                    ->withCount('views')
-                    ->orderByDesc($request->header('sort'))
-                    ->get();
-            } else {
-                $products = Product::join('likes', 'likes.product_id', '=', 'products.id')
-                    ->where('likes.user_id', Auth::id())
-                    ->with('user')
-                    ->withCount('likes')
-                    ->withCount('views')
-                    ->orderBy($request->header('sort'))
-                    ->get();
-            }
-        } else {
-            $products = Product::join('likes', 'likes.product_id', '=', 'products.id')
-                ->where('likes.user_id', Auth::id())
-                ->with('user')
-                ->withCount('likes')
-                ->withCount('views')
-                ->orderBy('remaining_days')
-                ->get();
+        if ($this->descSort($request)){
+            $products=$this->productQuery($request->header('sort'), true);
+        }elseif ($this->isSort($request)){
+            $products=$this->productQuery($request->header('sort'), false);
+        }else{
+            $products=$this->productQuery('remaining_days', false);
         }
-        for ($i = 0; $i < count($products); $i++) {
-            $products[$i]['images'] = json_decode($products[$i]['images'], true);
-            $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
-        }
+        $products=$this->getProducts( $products
+            ->join('likes', 'likes.product_id', '=', 'products.id')
+            ->where('likes.user_id', Auth::id())
+            ->get());
         return $this->returnData('products', $products);
     }
 }

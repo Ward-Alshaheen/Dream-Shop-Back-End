@@ -17,7 +17,6 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->json('images');
             $table->longText('description');
             $table->string('category');
             $table->date('expiration_date');
