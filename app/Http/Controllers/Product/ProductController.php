@@ -315,6 +315,7 @@ class ProductController extends Controller
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
+            $products[$i]['discounts'] = json_decode($products[$i]['discounts'], true);
         }
         return $this->returnData('products', $products);
     }
