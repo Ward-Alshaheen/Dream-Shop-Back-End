@@ -33,7 +33,6 @@ class Product extends Model
         'facebook'
     ];
     protected $hidden = [
-        'discounts',
         'updated_at',
         'created_at'
     ];

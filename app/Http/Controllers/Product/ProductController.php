@@ -59,6 +59,7 @@ class ProductController extends Controller
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
+            $products[$i]['discounts'] = json_decode($products[$i]['discounts'], true);
         }
         return $this->returnData('products', $products);
     }
@@ -104,7 +105,7 @@ class ProductController extends Controller
         $diff = date_diff($dateNow, $product['expiration_date']);
         $product['remaining_days'] = $diff->format("%R%a") * 1;
         $product['images'] = json_encode($product['images']);
-        $product['discounts'] = ['main' => $product['price'], 'd' => $product['discounts']];
+        $product['discounts'] = ['main' => $product['price']*1, 'd' => $product['discounts']];
         $product['price'] = $this->price($product['discounts'], $product['remaining_days']);
         $product['discounts'] = json_encode($product['discounts']);
         Product::create($product);
@@ -177,7 +178,6 @@ class ProductController extends Controller
         for ($i = 0; $i < count($products); $i++) {
             $products[$i]['images'] = json_decode($products[$i]['images'], true);
             $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
-
         }
         return $this->returnData('products', $products);
     }
@@ -200,6 +200,8 @@ class ProductController extends Controller
         $productUpdate = $request->all();
         $productUpdate['images'] = $product['images'];
         $validator = Validator::make($productUpdate, [
+            'price'=>'required|regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
+            'discounts'=>'required|json',
             'name' => 'required|string',
             'description' => 'required|string',
             'category' => 'required|string',
@@ -227,12 +229,17 @@ class ProductController extends Controller
                 $productUpdate['images'][] = $this->saveImage($productUpdate['image' . $i], 'productImage');
             }
         }
+        $productUpdate['discounts']=json_decode($productUpdate['discounts'],true);
+        $productUpdate['discounts'] = ['main' => $productUpdate['price']*1, 'd' => $productUpdate['discounts']];
+        $product['price']=$this->price($productUpdate['discounts'],$product['remaining_days']);
+        $product['discounts'] =json_encode($productUpdate['discounts']) ;
         $product['images'] = json_encode($productUpdate['images']);
         $product['name'] = $productUpdate['name'];
         $product['description'] = $productUpdate['description'];
         $product['category'] = $productUpdate['category'];
         $product['phone'] = $productUpdate['phone'];
         $product['quantity'] = $productUpdate['quantity'] * 1;
+        
         if ($request->has('facebook')) {
             $product['facebook'] = $productUpdate['facebook'];
         }
