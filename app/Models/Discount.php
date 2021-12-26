@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @method static create($discount)
+ * @method static firstWhere(string $string, $id)
  */
 class Discount extends Model
 {

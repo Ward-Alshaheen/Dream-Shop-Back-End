@@ -50,7 +50,7 @@ Route::group([
     Route::get('/{id}', [ProductController::class, 'show']);
     Route::post('/', [ProductController::class, 'store']);
     Route::get('/', [ProductController::class, 'index']);
-    Route::delete('/{id}', [ProductController::class, 'destroy']);
+    Route::delete('/{id}', [ProductController::class, 'destroy'])->name('delete');
     Route::post('/category',[ProductController::class,'showCategory']);
     Route::post('/{id}', [ProductController::class, 'update']);
     Route::get('view/{id}',[ViewController::class,'view']);

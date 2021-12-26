@@ -49,7 +49,7 @@ class DeleteProduct extends Command
             if ($product['remaining_days'] <= 0) {
                 $im = $product->images;
                 foreach ($im as $item) {
-                    unlink("D:\\PL project\\PL_project_laravel\\public\\".substr($item['url'], strpos($item['url'],'uploads')));
+                    unlink(public_path().'/'.substr($item['url'], strpos($item['url'],'uploads')));
                 }
                 $product->delete();
             } else {
