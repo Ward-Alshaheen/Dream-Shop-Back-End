@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @method static find(int $id)
@@ -28,13 +29,13 @@ class Product extends Model
         'remaining_days',
         'phone',
         'price',
-        'discounts',
         'quantity',
         'facebook'
     ];
     protected $hidden = [
         'updated_at',
-        'created_at'
+        'created_at',
+        'discount'
     ];
     public  function user(): BelongsTo
     {
@@ -55,5 +56,9 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(Image::class,'product_id');
+    }
+    public function discount(): HasOne
+    {
+        return $this->hasOne(Discount::class,'product_id');
     }
 }

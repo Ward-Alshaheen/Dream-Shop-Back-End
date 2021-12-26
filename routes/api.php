@@ -58,6 +58,8 @@ Route::group([
     Route::get('like/{id}',[LikeController::class,'like']);
     Route::get('my/products/like',[LikeController::class,'myProductLike']);
     Route::get('user/{id}',[ProductController::class,'productUser']);
+    Route::post('search/name', [ProductController::class, 'searchName']);
+    Route::post('search/date', [ProductController::class, 'searchDate']);
 
     Route::group([
         'prefix'=>'comments',

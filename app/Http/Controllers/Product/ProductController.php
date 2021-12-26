@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Product;
 
 use App\Http\Controllers\Controller;
-use App\Models\Image;
 use App\Models\Product;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\JsonResponse;
@@ -24,17 +23,10 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        if ($this->descSort($request)) {
-            $products = $this->productQuery($request->header('sort'), true);
-        } elseif ($this->isSort($request)) {
-            $products = $this->productQuery($request->header('sort'), false);
-        } else {
-            $products = $this->productQuery('remaining_days', false);
-        }
+        $products=$this->getSort($request);
         $products = $this->getProducts($products->get());
         return $this->returnData('products', $products);
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -59,17 +51,19 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
-        $product['discounts'] = json_decode($product['discounts'], true);
+        $product['discounts'] = DiscountController::
+        fromArray(json_decode($product['discounts'], true), $product['price']);
+        if (!DiscountController::discountValidator($product['discounts']))
+            return $this->returnError(401, 'discounts error');
         $product['user_id'] = Auth::id();
         $product['expiration_date'] = date_create(date('Y/m/d', strtotime($product['expiration_date'])));
         $dateNow = date_create(date('Y/m/d'));
         $diff = date_diff($dateNow, $product['expiration_date']);
         $product['remaining_days'] = $diff->format("%R%a") * 1;
-        $product['discounts'] = ['main' => $product['price'] * 1, 'd' => $product['discounts']];
-        $product['price'] = $this->price($product['discounts'], $product['remaining_days']);
-        $product['discounts'] = json_encode($product['discounts']);
+        $product['price'] = $this->price(DiscountController::fromJson($product['discounts']), $product['remaining_days']);
         $newProduct = Product::create($product);
-        ImageControllers::createImage($this->saveImage($product['image1'], 'productImage'), $newProduct['id']);
+        DiscountController::createDiscount($newProduct['id'], $product['discounts']);
+        ImageController::createImage($this->saveImage($product['image1'], 'productImage'), $newProduct['id']);
         for ($i = 2; $request->has('image' . $i); $i++) {
             $validator = Validator::make($product, [
                 'image' . $i => 'required|image',
@@ -77,11 +71,10 @@ class ProductController extends Controller
             if ($validator->fails()) {
                 return $this->returnError(401, $validator->errors());
             }
-            ImageControllers::createImage($this->saveImage($product['image' . $i], 'productImage'), $newProduct['id']);
+            ImageController::createImage($this->saveImage($product['image' . $i], 'productImage'), $newProduct['id']);
         }
         return $this->returnSuccessMessage('Successfully');
     }
-
     /**
      * Display the specified resource.
      *
@@ -92,11 +85,15 @@ class ProductController extends Controller
         if (!$product) {
             return $this->returnError(55, 'not found');
         }
-        $product['images'] = json_decode($product['images'], true);
+        $product['images'] = ImageController::getImages($product['id']);
         $product['me_likes'] = LikeController::meLike($product['id']);
+        if ($product['user']['id'] == Auth::id()) {
+            $product['discounts'] = DiscountController::fromJson($product->discount);
+        }
+        unset($product['user']['account_confirmation']);
+        unset($product['user']['reset_password']);
         return $this->returnData("product", $product);
     }
-
     //Show Category
     public function showCategory(Request $request): JsonResponse
     {
@@ -107,17 +104,10 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
-        if ($this->descSort($request)) {
-            $products = $this->productQuery($request->header('sort'), true);
-        } elseif ($this->isSort($request)) {
-            $products = $this->productQuery($request->header('sort'), false);
-        } else {
-            $products = $this->productQuery('remaining_days', false);
-        }
+        $products=$this->getSort($request);
         $products = $this->getProducts($products->where('category', $category['category'])->get());
         return $this->returnData('products', $products);
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -145,8 +135,10 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
         }
+        if (!$productUpdate['discounts']=DiscountController::updateDiscount($product['id'],json_decode( $productUpdate['discounts'],true),$productUpdate['price']))
+            return $this->returnError(401, 'discounts error');
         $c = $product['images_count'];
-        $images=ImageControllers::getImages($product['id']);
+        $images = ImageController::getImages($product['id']);
         for ($i = 1; $c >= $i || $request->has('image' . $i); $i++) {
             $validator = Validator::make($productUpdate, [
                 'image' . $i => 'image',
@@ -157,16 +149,13 @@ class ProductController extends Controller
             if ($request->has('image' . $i)) {
                 if ($c >= $i) {
                     unlink(substr($images[$i - 1], strlen(URL::to('/')) + 1));
-                    ImageControllers::updateImage($product['id'],$i-1,$this->saveImage($productUpdate['image' . $i], 'productImage'));
+                    ImageController::updateImage($product['id'], $i - 1, $this->saveImage($productUpdate['image' . $i], 'productImage'));
                     continue;
                 }
-                ImageControllers::createImage($this->saveImage($productUpdate['image' . $i], 'productImage'), $product['id']);
+                ImageController::createImage($this->saveImage($productUpdate['image' . $i], 'productImage'), $product['id']);
             }
         }
-        $productUpdate['discounts'] = json_decode($productUpdate['discounts'], true);
-        $productUpdate['discounts'] = ['main' => $productUpdate['price'] * 1, 'd' => $productUpdate['discounts']];
         $product['price'] = $this->price($productUpdate['discounts'], $product['remaining_days']);
-        $product['discounts'] = json_encode($productUpdate['discounts']);
         $product['name'] = $productUpdate['name'];
         $product['description'] = $productUpdate['description'];
         $product['category'] = $productUpdate['category'];
@@ -179,7 +168,6 @@ class ProductController extends Controller
         $product->save();
         return $this->returnSuccessMessage("Successfully");
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -202,32 +190,46 @@ class ProductController extends Controller
         $product->delete();
         return $this->returnSuccessMessage('Successfully');
     }
-
     //My Product
     public function myProduct(Request $request): JsonResponse
     {
-        if ($this->descSort($request)) {
-            $products = $this->productQuery($request->header('sort'), true);
-        } elseif ($this->isSort($request)) {
-            $products = $this->productQuery($request->header('sort'), false);
-        } else {
-            $products = $this->productQuery('remaining_days', false);
-        }
+        $products=$this->getSort($request);
         $products = $this->getProducts($products->where('user_id', Auth::id())->get());
         return $this->returnData('products', $products);
     }
-
     //products user
     public function productUser(Request $request, int $id): JsonResponse
     {
-        if ($this->descSort($request)) {
-            $products = $this->productQuery($request->header('sort'), true);
-        } elseif ($this->isSort($request)) {
-            $products = $this->productQuery($request->header('sort'), false);
-        } else {
-            $products = $this->productQuery('remaining_days', false);
-        }
+        $products=$this->getSort($request);
         $products = $this->getProducts($products->where('user_id', $id)->get());
+        return $this->returnData('products', $products);
+    }
+    //search mame
+    public function searchName(Request $request): JsonResponse
+    {
+        $productUpdate = $request->all();
+        $validator = Validator::make($productUpdate, [
+            'name' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return $this->returnError(401, $validator->errors());
+        }
+        $products=$this->getSort($request);
+        $products = $this->getProducts($products->where('name','like','%'.$request['name'].'%')->get());
+        return $this->returnData('products', $products);
+    }
+    //search date
+    public function searchDate(Request $request): JsonResponse
+    {
+        $productUpdate = $request->all();
+        $validator = Validator::make($productUpdate, [
+            'date' => 'required|date',
+        ]);
+        if ($validator->fails()) {
+            return $this->returnError(401, $validator->errors());
+        }
+        $products=$this->getSort($request);
+        $products = $this->getProducts($products->where('expiration_date',date_create(date('Y/m/d', strtotime($request['date']))))->get());
         return $this->returnData('products', $products);
     }
 }

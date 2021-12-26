@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\Product\DiscountController;
 use App\Models\Product;
 use App\Traits\GeneralTrait;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\URL;
 
 class DeleteProduct extends Command
 {
@@ -45,9 +47,13 @@ class DeleteProduct extends Command
         foreach ($products as $product) {
             $product['remaining_days'] -= 1;
             if ($product['remaining_days'] <= 0) {
+                $im = $product->images;
+                foreach ($im as $item) {
+                    unlink("D:\\PL project\\PL_project_laravel\\public\\".substr($item['url'], strpos($item['url'],'uploads')));
+                }
                 $product->delete();
             } else {
-                $product['price'] = $this->price(json_decode($product['discounts'], true), $product['remaining_days']);
+                $product['price'] = $this->price(DiscountController::fromJson( $product->discount), $product['remaining_days']);
                 $product->save();
             }
         }

@@ -2,12 +2,14 @@
 
 namespace App\Traits;
 
-use App\Http\Controllers\Product\ImageControllers;
+use App\Http\Controllers\Product\DiscountController;
+use App\Http\Controllers\Product\ImageController;
 use App\Http\Controllers\Product\LikeController;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
 
 trait GeneralTrait
@@ -100,30 +102,50 @@ trait GeneralTrait
         }
         return false;
     }
-    public function descSort(Request $request):bool{
-        if ($this->isSort($request)&&$request->header('desc')=="true"){
+
+    public function descSort(Request $request): bool
+    {
+        if ($this->isSort($request) && $request->header('desc') == "true") {
             return true;
         }
         return false;
     }
-    public function productQuery(string  $sort,bool $desc): Builder
+
+    public function productQuery(string $sort, bool $desc): Builder
     {
-        if ($desc){
+        if ($desc) {
             return Product::with('user')
                 ->withCount('likes')
                 ->withCount('views')
                 ->orderByDesc($sort);
         }
-        return Product::with('user')
+        return Product::with(['user'])
             ->withCount('likes')
             ->withCount('views')
             ->orderBy($sort);
     }
-    public function getProducts($products){
+
+    public function getProducts($products)
+    {
         for ($i = 0; $i < count($products); $i++) {
-            $products[$i]['images'] = ImageControllers::getImages($products[$i]['id']);
+            $products[$i]['images'] = ImageController::getImages($products[$i]['id']);
             $products[$i]['me_likes'] = LikeController::meLike($products[$i]['id']);
-            $products[$i]['discounts'] = json_decode($products[$i]['discounts'], true);
+            if ($products[$i]['user']['id'] == Auth::id()) {
+                $products[$i]['discounts'] = DiscountController::fromJson($products[$i]->discount);
+            }
+            unset($products[$i]['user']['account_confirmation']);
+            unset($products[$i]['user']['reset_password']);
+        }
+        return $products;
+    }
+    public function getSort(Request $request): Builder
+    {
+        if ($this->descSort($request)) {
+            $products = $this->productQuery($request->header('sort'), true);
+        } elseif ($this->isSort($request)) {
+            $products = $this->productQuery($request->header('sort'), false);
+        } else {
+            $products = $this->productQuery('remaining_days', false);
         }
         return $products;
     }

@@ -46,13 +46,7 @@ class LikeController extends Controller
      */
     public function myProductLike(Request $request): JsonResponse
     {
-        if ($this->descSort($request)){
-            $products=$this->productQuery($request->header('sort'), true);
-        }elseif ($this->isSort($request)){
-            $products=$this->productQuery($request->header('sort'), false);
-        }else{
-            $products=$this->productQuery('remaining_days', false);
-        }
+        $products=$this->getSort($request);
         $products=$this->getProducts( $products
             ->join('likes', 'likes.product_id', '=', 'products.id')
             ->where('likes.user_id', Auth::id())

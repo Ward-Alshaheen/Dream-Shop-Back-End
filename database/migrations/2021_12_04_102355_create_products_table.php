@@ -25,7 +25,6 @@ class CreateProductsTable extends Migration
             $table->string('phone');
             $table->longText('facebook')->nullable();
             $table->double('price');
-            $table->json('discounts');
             $table->timestamps();
         });
     }
