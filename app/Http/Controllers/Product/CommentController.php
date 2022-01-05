@@ -21,9 +21,9 @@ class CommentController extends Controller
      */
     public function all(int $id): JsonResponse
     {
-        $comments=Comment::where('product_id',$id)->get();
+        $comments=Comment::with('user:id,email,bio,image,name')
+        ->where('product_id',$id)->get();
         foreach ($comments as $comment){
-            $comment->user;
             $comment['time']=$this->timeAgo($comment['created_at']);
         }
         return $this->returnData('comments',$comments);

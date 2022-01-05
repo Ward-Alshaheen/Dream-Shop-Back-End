@@ -119,7 +119,7 @@ trait GeneralTrait
                 ->withCount('views')
                 ->orderByDesc($sort);
         }
-        return Product::with(['user'])
+        return Product::with('user:id,email,bio,image,name')
             ->withCount('likes')
             ->withCount('views')
             ->orderBy($sort);
@@ -133,8 +133,6 @@ trait GeneralTrait
             if ($products[$i]['user']['id'] == Auth::id()) {
                 $products[$i]['discounts'] = DiscountController::fromJson($products[$i]->discount);
             }
-            unset($products[$i]['user']['account_confirmation']);
-            unset($products[$i]['user']['reset_password']);
         }
         return $products;
     }
