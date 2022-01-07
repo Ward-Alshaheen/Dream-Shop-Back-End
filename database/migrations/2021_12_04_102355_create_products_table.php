@@ -22,8 +22,6 @@ class CreateProductsTable extends Migration
             $table->date('expiration_date');
             $table->integer('remaining_days');
             $table->double('quantity')->default(1);
-            $table->string('phone');
-            $table->longText('facebook')->nullable();
             $table->double('price');
             $table->timestamps();
         });

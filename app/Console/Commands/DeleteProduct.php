@@ -6,7 +6,6 @@ use App\Http\Controllers\Product\DiscountController;
 use App\Models\Product;
 use App\Traits\GeneralTrait;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\URL;
 
 class DeleteProduct extends Command
 {

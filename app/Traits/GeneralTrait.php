@@ -114,12 +114,12 @@ trait GeneralTrait
     public function productQuery(string $sort, bool $desc): Builder
     {
         if ($desc) {
-            return Product::with('user')
+            return Product::with('user:id,email,bio,image,name,phone,facebook')
                 ->withCount('likes')
                 ->withCount('views')
                 ->orderByDesc($sort);
         }
-        return Product::with('user:id,email,bio,image,name')
+        return Product::with('user:id,email,bio,image,name,phone,facebook')
             ->withCount('likes')
             ->withCount('views')
             ->orderBy($sort);

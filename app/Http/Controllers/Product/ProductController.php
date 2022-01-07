@@ -42,11 +42,9 @@ class ProductController extends Controller
             'description' => 'required|string',
             'category' => 'required|string',
             'expiration_date' => 'required|date',
-            'phone' => 'required|string',
             'price' => 'required|regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
             'discounts' => 'required|json',
             'quantity' => 'regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
-            'facebook' => 'URL'
         ]);
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
@@ -81,7 +79,7 @@ class ProductController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $product = Product::with('user')->withCount('likes')->withCount('views')->find($id);
+        $product = Product::with('user:id,email,bio,image,name,phone,facebook')->withCount('likes')->withCount('views')->find($id);
         if (!$product) {
             return $this->returnError(55, 'not found');
         }
@@ -90,8 +88,6 @@ class ProductController extends Controller
         if ($product['user']['id'] == Auth::id()) {
             $product['discounts'] = DiscountController::fromJson($product->discount);
         }
-        unset($product['user']['account_confirmation']);
-        unset($product['user']['reset_password']);
         return $this->returnData("product", $product);
     }
     //Show Category
@@ -128,9 +124,7 @@ class ProductController extends Controller
             'name' => 'required|string',
             'description' => 'required|string',
             'category' => 'required|string',
-            'phone' => 'required|string',
             'quantity' => 'required|Integer',
-            'facebook' => 'URL'
         ]);
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
@@ -159,12 +153,8 @@ class ProductController extends Controller
         $product['name'] = $productUpdate['name'];
         $product['description'] = $productUpdate['description'];
         $product['category'] = $productUpdate['category'];
-        $product['phone'] = $productUpdate['phone'];
         $product['quantity'] = $productUpdate['quantity'] * 1;
 
-        if ($request->has('facebook')) {
-            $product['facebook'] = $productUpdate['facebook'];
-        }
         $product->save();
         return $this->returnSuccessMessage("Successfully");
     }

@@ -51,6 +51,8 @@ class UserControllers extends AuthController
             'name' => 'required',
             'email' => 'required|email',
             'image' => 'image',
+            'phone' => 'string',
+            'facebook'=>'URL'
         ]);
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
@@ -61,6 +63,16 @@ class UserControllers extends AuthController
             $user['bio'] = $input['bio'];
         }else{
             $user['bio'] =null;
+        }
+        if ($request->has('phone')) {
+            $user['phone'] = $input['phone'];
+        }else{
+            $user['phone'] =null;
+        }
+        if ($request->has('facebook')) {
+            $user['facebook'] = $input['facebook'];
+        }else{
+            $user['facebook'] =null;
         }
         if ($request->has('image')) {
             if ($user['image'] != null) {

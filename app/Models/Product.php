@@ -27,10 +27,8 @@ class Product extends Model
         'category',
         'expiration_date',
         'remaining_days',
-        'phone',
         'price',
         'quantity',
-        'facebook'
     ];
     protected $hidden = [
         'updated_at',

@@ -20,6 +20,8 @@ class CreateUsersTable extends Migration
             $table->text('bio')->nullable();
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('phone')->nullable();
+            $table->longText('facebook')->nullable();
             $table->boolean('account_confirmation')->default(false);
             $table->boolean('reset_password')->default(false);
             $table->timestamps();
