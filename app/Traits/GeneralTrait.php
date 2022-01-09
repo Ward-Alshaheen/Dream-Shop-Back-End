@@ -117,11 +117,13 @@ trait GeneralTrait
             return Product::with('user:id,email,bio,image,name,phone,facebook')
                 ->withCount('likes')
                 ->withCount('views')
+                ->withCount('comments')
                 ->orderByDesc($sort);
         }
         return Product::with('user:id,email,bio,image,name,phone,facebook')
             ->withCount('likes')
             ->withCount('views')
+            ->withCount('comments')
             ->orderBy($sort);
     }
 

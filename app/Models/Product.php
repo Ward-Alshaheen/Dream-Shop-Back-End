@@ -47,7 +47,7 @@ class Product extends Model
     {
         return $this->hasMany(View::class,'product_id');
     }
-    public function comment(): HasMany
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class,'product_id');
     }

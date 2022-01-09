@@ -124,7 +124,7 @@ class ProductController extends Controller
             'name' => 'required|string',
             'description' => 'required|string',
             'category' => 'required|string',
-            'quantity' => 'required|Integer',
+            'quantity' => 'required|regex:/^[0-9]+(\.[0-9][0-9]?)?$/',
         ]);
         if ($validator->fails()) {
             return $this->returnError(401, $validator->errors());
